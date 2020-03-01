@@ -13,6 +13,7 @@ int main(){
     // regex word("\\w+(\\.?-?\\w+)*");
     regex xml_token("\\</?.+\\>");
     ifstream infile("wsj.small.xml");
+    ofstream outfile("wsj.clean.txt");
     if(infile.is_open()){
         while(getline(infile, line)){ // for line in file
             istringstream iss(line);
@@ -21,15 +22,15 @@ int main(){
                     continue;
                 }
                 else if(line.front() != '<' && line.back() == '>'){
-                    cout << line.substr(0, line.find('<')) << " ";
+                    outfile << line.substr(0, line.find('<')) << " ";
                     is_tokens = true;
                 }
                 else if(line.front() == '<' && line.back() != '>'){
-                    cout << line.substr(line.find('>') + 1, line.size()) << " ";
+                    outfile << line.substr(line.find('>') + 1, line.size()) << " ";
                     is_tokens = true;
                 }
                 else if(!regex_match(line, xml_token)){
-                    cout << line << " ";
+                    outfile << line << " ";
                     is_tokens = true;
                 }
                 else if(line == "</DOC>"){
@@ -37,7 +38,7 @@ int main(){
                 }
             }
             if(is_tokens || end_doc){
-                cout << endl;
+                outfile << endl;
                 is_tokens = false;
                 end_doc = false;
             }
