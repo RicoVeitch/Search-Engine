@@ -8,6 +8,7 @@ using namespace std;
 
 int main(){
     string line;
+    string outline = "";
     bool is_tokens = false;
     bool end_doc = false;
     // regex word("\\w+(\\.?-?\\w+)*");
@@ -22,15 +23,21 @@ int main(){
                     continue;
                 }
                 else if(line.front() != '<' && line.back() == '>'){
-                    outfile << line.substr(0, line.find('<')) << " ";
+                    //outfile << line.substr(0, line.find('<')) << " ";
+                    outline.append(line.substr(0, line.find('<')));
+                    outline.append(" ");
                     is_tokens = true;
                 }
                 else if(line.front() == '<' && line.back() != '>'){
-                    outfile << line.substr(line.find('>') + 1, line.size()) << " ";
+                    //outfile << line.substr(line.find('>') + 1, line.size()) << " ";
+                    outline.append(line.substr(line.find('>') + 1, line.size()));
+                    outline.append(" ");
                     is_tokens = true;
                 }
                 else if(!regex_match(line, xml_token)){
-                    outfile << line << " ";
+                    outline.append(line);
+                    outline.append(" ");
+                    //outfile << line << " ";
                     is_tokens = true;
                 }
                 else if(line == "</DOC>"){
@@ -38,7 +45,10 @@ int main(){
                 }
             }
             if(is_tokens || end_doc){
+                outline.pop_back();
+                outfile << outline;
                 outfile << endl;
+                outline = "";
                 is_tokens = false;
                 end_doc = false;
             }
