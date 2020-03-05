@@ -3,18 +3,42 @@
 #include <string>
 #include <sstream>
 #include <regex>
+#include <map>
+#include <algorithm>
+#include <unordered_map>
 
 using namespace std;
 
-int main(){
+map<string, unordered_map<string, int> > dict;
+ifstream infile("wsj.small.xml");
+ofstream outfile("wsj_clean");
+
+inline void to_lower(string& s){
+    transform(s.begin(), s.end(), s.begin(), ::tolower); 
+}
+
+void save_dict(){
+    unsigned long block_loc = 0;
+    int doc_size = 12;
+    for (auto it : dict) {
+        outfile << "#" << it.first << " "; // << " ";
+        unordered_map<string, int> internal_map = it.second;
+        // for (auto it2: internal_map) {
+        //     //if (it2 != internal_map.begin())
+        //     outfile << it2.first << " ";
+        // }
+        outfile << internal_map.size() <<  " " << block_loc << endl;
+        block_loc += (internal_map.size() * doc_size);
+    }
+}
+
+void get_input(){
     string line;
-    string outline = "";
-    bool is_tokens = false;
-    bool end_doc = false;
+    string curr_doc;
     // regex word("\\w+(\\.?-?\\w+)*");
     regex xml_token("\\</?.+\\>");
-    ifstream infile("wsj.small.xml");
-    ofstream outfile("wsj.clean.txt");
+    regex doc_header("^WSJ(\\d+-\\d+)$");
+
     if(infile.is_open()){
         while(getline(infile, line)){ // for line in file
             istringstream iss(line);
@@ -22,38 +46,33 @@ int main(){
                 if(line == ""){
                     continue;
                 }
+                if(regex_match(line, doc_header)){
+                    curr_doc = line.substr(3, line.size());
+                    to_lower(line);
+                    dict[line][curr_doc]++;
+                    continue;
+                }
                 else if(line.front() != '<' && line.back() == '>'){
-                    //outfile << line.substr(0, line.find('<')) << " ";
-                    outline.append(line.substr(0, line.find('<')));
-                    outline.append(" ");
-                    is_tokens = true;
+                    line = line.substr(0, line.find('<'));
                 }
                 else if(line.front() == '<' && line.back() != '>'){
-                    //outfile << line.substr(line.find('>') + 1, line.size()) << " ";
-                    outline.append(line.substr(line.find('>') + 1, line.size()));
-                    outline.append(" ");
-                    is_tokens = true;
+                    line = line.substr(line.find('>') + 1);
                 }
-                else if(!regex_match(line, xml_token)){
-                    outline.append(line);
-                    outline.append(" ");
-                    //outfile << line << " ";
-                    is_tokens = true;
+                else if(line.back() == ',' || line.back() == '.'){
+                    line = line.substr(0, line.size() - 1);
                 }
-                else if(line == "</DOC>"){
-                    end_doc = true;
+                if(!regex_match(line, xml_token)){
+                    to_lower(line);
+                    dict[line][curr_doc]++;
                 }
-            }
-            if(is_tokens || end_doc){
-                outline.pop_back();
-                outfile << outline;
-                outfile << endl;
-                outline = "";
-                is_tokens = false;
-                end_doc = false;
             }
         }
         infile.close();
     }
+}
+
+int main(){
+    get_input();
+    save_dict();
     return 0;
 }
