@@ -10,26 +10,31 @@
 using namespace std;
 
 map<string, unordered_map<string, int> > dict;
-ifstream infile("wsj.small.xml");
-ofstream outfile("wsj_clean");
+ifstream infile;
+ofstream index_out;
+ofstream posting_out;
 
 inline void to_lower(string& s){
     transform(s.begin(), s.end(), s.begin(), ::tolower); 
 }
 
 void save_dict(){
+    index_out.open("indexing");
+    posting_out.open("posting");
     unsigned long block_loc = 0;
-    int doc_size = 12;
+    int doc_size = 12; 
     for (auto it : dict) {
-        outfile << "#" << it.first << " "; // << " ";
+        index_out << "#" << it.first << " "; // << " ";
         unordered_map<string, int> internal_map = it.second;
-        // for (auto it2: internal_map) {
-        //     //if (it2 != internal_map.begin())
-        //     outfile << it2.first << " ";
-        // }
-        outfile << internal_map.size() <<  " " << block_loc << endl;
+        for (auto it2: internal_map) {
+            posting_out << it2.first << " " << it2.second;
+            posting_out << endl;
+        }
+        index_out << internal_map.size() <<  " " << block_loc << endl;
         block_loc += (internal_map.size() * doc_size);
     }
+    index_out.close();
+    posting_out.close();
 }
 
 void get_input(){
@@ -38,7 +43,7 @@ void get_input(){
     // regex word("\\w+(\\.?-?\\w+)*");
     regex xml_token("\\</?.+\\>");
     regex doc_header("^WSJ(\\d+-\\d+)$");
-
+    infile.open("wsj.small.xml");
     if(infile.is_open()){
         while(getline(infile, line)){ // for line in file
             istringstream iss(line);
@@ -71,7 +76,25 @@ void get_input(){
     }
 }
 
-int main(){
+void help(){
+    cerr << "USAGE: " << endl;
+}
+
+int main(int argc, char* argv[]){
+    // if(argc <= 1){
+    //     help();
+    //     EXIT_FAILURE;
+    // }
+    // if(argv[1] == "-i"){
+    //     // get input
+    //     // save to disk
+    // }else if(argv[1] == "-s" && argc == 3){
+    //     // take input
+    //     // do query
+    // }else{
+    //     help();
+    //     EXIT_FAILURE;
+    // }
     get_input();
     save_dict();
     return 0;
