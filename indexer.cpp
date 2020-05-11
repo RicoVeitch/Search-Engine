@@ -1,8 +1,6 @@
 #include "indexer.h"
 
 namespace SE{
-
-    // most word occeurnce in a doc AND longest doc.
     void save_dict(std::map<std::string, std::unordered_map<std::string, int> > &dict, std::unordered_map<std::string, int> &doc_lengths){
         std::ofstream index_out;
         std::ofstream posting_out;
@@ -113,8 +111,10 @@ namespace SE{
                     std::vector<std::string> clean_line;
                     clean_string(line, clean_line);
                     for(std::string word : clean_line){
-                        dict[word][curr_doc]++;
-                        doc_lengths[curr_doc]++;
+                        if(stop_words.find(word) == stop_words.end()){
+                            dict[word][curr_doc]++;
+                            doc_lengths[curr_doc]++;
+                        }
                        // }
                     }
                 }

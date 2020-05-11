@@ -27,7 +27,8 @@ int main(int argc, char** argv) {
                 std::vector<std::string> clean_word;
                 SE::clean_string(raw_query, clean_word);
                 for(std::string word : clean_word){
-                    query += word + " ";
+                    if(SE::stop_words.find(word) == SE::stop_words.end())
+                        query += word + " ";
                 }
             }
             query.pop_back();
