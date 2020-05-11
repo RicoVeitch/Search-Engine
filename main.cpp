@@ -17,9 +17,20 @@ int main(int argc, char** argv) {
     std::string option = argv[1];
     if(option == "-i"){
         std::cout << "Index" << std::endl;
-    }else if(option == "-s"){ //  && argc == 3
-        std::string query;
-        while(std::getline(std::cin, query)) {
+        SE::index();
+    }else if(option == "-s"){ 
+        std::string raw_query;
+        while(std::getline(std::cin, raw_query)) {
+            std::string query = "";
+            std::istringstream iss(raw_query);
+            while (getline(iss, raw_query, ' ')){
+                std::vector<std::string> clean_word;
+                SE::clean_string(raw_query, clean_word);
+                for(std::string word : clean_word){
+                    query += word + " ";
+                }
+            }
+            query.pop_back();
             std::cout << "Seaching for: " << query << std::endl;
             SE::search(query);
         }

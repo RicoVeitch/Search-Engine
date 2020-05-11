@@ -20,7 +20,7 @@ namespace SE{
     std::string walk_back(unsigned long mid, std::ifstream &indexing_in){
         std::string word;
         indexing_in >> word;
-        while(word[0] != '#'){
+        while(word[0] != '~'){
             mid--;
             indexing_in.seekg(mid);
             indexing_in >> word;
@@ -82,30 +82,35 @@ namespace SE{
         }
     }
 
-    void search(std::string query){
-        clock_t start = clock();
-        // std::string query = "john blair in the record out of sight while tipping over";
-        std::string query_copy = query;
-
-        std::ifstream indexing_in;
-        std::ifstream posting_in;
+    void load_info(int &doc_amt, int &avg_doc_len){
         std::ifstream info_in;
-        std::string indexing_name = "indexing";
-        std::string posting_name = "posting";
         std::string info_name = "info";
-
-        std::string doc_id;
-        int occurences, doc_len;
-        
         std::string line;
-        int doc_amt;
-        int avg_doc_len;
-        int block_size = 22;
         info_in.open(info_name);
         getline(info_in, line);
         doc_amt = stoi(line);
         getline(info_in, line);
         avg_doc_len = stoi(line);
+        info_in.close();
+    }
+
+    void search(std::string query){
+        clock_t start = clock();
+
+        std::string query_copy = query;
+
+        std::ifstream indexing_in;
+        std::ifstream posting_in;  
+        std::string indexing_name = "indexing";
+        std::string posting_name = "posting";
+
+        std::string doc_id;
+        int occurences, doc_len;
+        
+        int doc_amt;
+        int avg_doc_len;
+        const int block_size = 22;
+        load_info(doc_amt, avg_doc_len);
 
         /*******/
         char buffer[block_size];
@@ -114,11 +119,9 @@ namespace SE{
         /*******/
 
         std::vector<unsigned long> info;
-        std::vector<int> posting_info;
-
         std::unordered_map<std::string, float> query_results; 
-
         std::unordered_map<std::string, int> query_term_count;
+
         std::istringstream qss(query_copy);
         while (getline(qss, query_copy, ' ')){
             query_term_count[query_copy]++;
@@ -130,17 +133,14 @@ namespace SE{
         while (std::getline(iss, query, ' ')){
             if(bsearch_indexing(query, indexing_in)){
                 load_block_info(info, indexing_in);
-                //posting_in.seekg(info[BLOCK]);
                 fseek(postings_file, info[BLOCK], SEEK_SET);
                 int doc_non = 1;
                 while(fgets(buffer , block_size , postings_file) != NULL && doc_non <= info[AMT]){
                     if(buffer[0] != '\n'){
-                        //cout << buffer << endl;
                         std::string line(buffer);
                         doc_id = line.substr(0, 11);
                         occurences = stoi(line.substr(12, 3));
                         doc_len = stoi(line.substr(16, 5));
-                        //cout << doc_id << " " << occurences << " " << doc_len << endl;
                         query_results[doc_id] += bm25(doc_len, avg_doc_len, doc_amt, info[AMT], occurences, query_term_count[query]);
                         doc_non++;
                     }

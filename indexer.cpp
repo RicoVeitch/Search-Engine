@@ -2,9 +2,6 @@
 
 namespace SE{
 
-    inline void to_lower(std::string &s){
-        transform(s.begin(), s.end(), s.begin(), ::tolower); 
-    }
     // most word occeurnce in a doc AND longest doc.
     void save_dict(std::map<std::string, std::unordered_map<std::string, int> > &dict, std::unordered_map<std::string, int> &doc_lengths){
         std::ofstream index_out;
@@ -17,7 +14,7 @@ namespace SE{
         std::vector<std::string> occurence_pad_dic{"", "00", "0", ""};
         std::vector<std::string> doc_pad_dic{"", "0000", "000", "00", "0", ""};
         for (auto it : dict) {
-            index_out << "#" << it.first << " "; // << " ";
+            index_out << "~" << it.first << " "; // << " ";
             //unordered_map<string, int> internal_map = it.second;
             for (auto it2: it.second) {
                 //              Doc id.            term occurence      doc len
@@ -36,7 +33,7 @@ namespace SE{
             index_out << it.second.size() <<  " " << block_loc << std::endl;
             block_loc += (it.second.size() * doc_size);
         }
-        std::cout << "most occurence: " << most_occured << " longest doc: " << longest_doc << std::endl;
+        // std::cout << "most occurence: " << most_occured << " longest doc: " << longest_doc << std::endl;
         index_out.close();
         posting_out.close();
     }
@@ -54,10 +51,35 @@ namespace SE{
         info_out.close();
     }
 
+    void clean_string(std::string &line, std::vector<std::string> &res){
+        int start = 0;
+        std::string token;
+        for(int c = 0; c < line.length(); c++){
+            if(!std::isalnum(line[c])){
+                if(line[c] == '%'){ 
+                    res.push_back("%");
+                } else if(line[c] == '.' && (c != 0 && c != line.length() - 1) && (std::isalnum(line[c-1]) && std::isalnum(line[c+1]))){ // for decimal
+                    continue;
+                }
+                token = line.substr(start, c-start);
+                if(token.length() > 0){
+                    to_lower(token);
+                    res.push_back(token);
+                }
+                start = c + 1;
+            }
+        }
+        token = line.substr(start, line.length()-start);
+        if(token.length() > 0){
+            to_lower(token);
+            res.push_back(token);
+        }
+    }
+
     void parse(std::map<std::string, std::unordered_map<std::string, int> > &dict, std::unordered_map<std::string, int> &doc_lengths){
         std::string line;
         std::string curr_doc;
-        int done;
+        int done = 0;
         int first_cut, second_cut, diff;
         // regex word("\\w+(\\.?-?\\w+)*");
         std::regex xml_token("\\</?.+\\>");
@@ -87,40 +109,14 @@ namespace SE{
                     else if(line.front() == '<' && line.back() != '>'){
                         line = line.substr(line.find('>') + 1);
                     }
-                    // else if(line.back() == ',' || line.back() == '.'){
-                    //     line = line.substr(0, line.size() - 1);
-                    // }
-                    else{
-                        //cout << line << endl;
-                        first_cut = 0;
-                        second_cut = line.length();
-                        for(int i = 0; i < line.length(); i++) {
-                            if(!isalnum(line[i])){
-                                first_cut++;
-                            }else{
-                                break;
-                            }
-                        }
-                        for(int i = line.length() - 1; i >= 0; i--) {
-                            if(!isalnum(line[i])){
-                                second_cut--;
-                            }else{
-                                break;
-                            }
-                        }
-                        if(first_cut == line.length() || second_cut == 0){
-                            //cout << line << endl;
-                            continue;
-                        }else{
-                            diff = line.length() - second_cut;
-                            line.erase(0, first_cut);
-                            line.erase(second_cut - first_cut, diff);
-                        }
+                    //else{
+                    std::vector<std::string> clean_line;
+                    clean_string(line, clean_line);
+                    for(std::string word : clean_line){
+                        dict[word][curr_doc]++;
+                        doc_lengths[curr_doc]++;
+                       // }
                     }
-                    // !regex_match(line, xml_token)
-                    to_lower(line);
-                    dict[line][curr_doc]++;
-                    doc_lengths[curr_doc]++;
                 }
             }
             infile.close();
