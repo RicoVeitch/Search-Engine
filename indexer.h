@@ -1,5 +1,4 @@
-#ifndef INDEXER_H 
-#define INDEXER_H
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -21,6 +20,7 @@ namespace SE{
     "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", 
     "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", 
     "very", "s", "t", "can", "will", "just", "don", "should", "now"});
+    extern const size_t doc_size = 14;
     /**
      * Converts a string to lower case.  
      * @param s: string to convert.
@@ -55,5 +55,3 @@ namespace SE{
     */
     void index();
 }
-
-#endif

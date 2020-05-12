@@ -1,7 +1,7 @@
 #include "search.h"
-
 #define AMT 0
 #define BLOCK 1
+
 namespace SE{
 
     void load_block_info(std::vector<unsigned long> &res, std::ifstream &indexing_in){
@@ -57,21 +57,17 @@ namespace SE{
         return found;
     }
 
-    float bm25(int dl, float adl, int N, long nt, int tf, int tq){
+    float bm25(uint32_t dl, float adl, int N, long nt, uint16_t tf, int tq){
         float K = k1 * ((1-b) + ((b * dl) / adl));
-        // float wt = log2((N - nt + 0.5) / (nt + 0.5));
-        // float second = ((k1 + 1) * tf) / (K + tf);
-        // float third = ((k3 + 1) * tq) / (k3 + tq);
-        // return wt * second * third;
         return log2((N - nt + 0.5) / (nt + 0.5)) * ((k1 + 1) * tf) / (K + tf) * ((k3 + 1) * tq) / (k3 + tq);
     }
 
-    void print_query_ranking(std::unordered_map<std::string, float> &query_results){
+    void print_query_ranking(std::unordered_map<uint64_t, float> &query_results){
         int max_docs = 10;
-        std::vector<std::pair<std::string, float> > res;
-        std::copy(query_results.begin(), query_results.end(), std::back_inserter<std::vector<std::pair<std::string, float>>>(res));
+        std::vector<std::pair<uint64_t, float> > res;
+        std::copy(query_results.begin(), query_results.end(), std::back_inserter<std::vector<std::pair<uint64_t, float>>>(res));
         sort(res.begin(), res.end(),
-                [](const std::pair<std::string, float>& l, std::pair<std::string, float>& r) {
+                [](const std::pair<uint64_t, float>& l, std::pair<uint64_t, float>& r) {
                     if (l.second != r.second)
                         return l.second > r.second;
 
@@ -95,31 +91,29 @@ namespace SE{
     }
 
     void search(std::string query){
-        clock_t start = clock();
-
         std::string query_copy = query;
 
+        // file information
         std::ifstream indexing_in;
         std::ifstream posting_in;  
         std::string indexing_name = "indexing";
         std::string posting_name = "posting";
-
-        std::string doc_id;
-        int occurences, doc_len;
         
+        // varaibles to store amount of documents that were indexed, and average document length. 
         int doc_amt;
         int avg_doc_len;
-        const int block_size = 22;
         load_info(doc_amt, avg_doc_len);
 
-        /*******/
-        char buffer[block_size];
+        // Details for posting list
         FILE * postings_file;
-        postings_file = fopen ("posting" , "r");
-        /*******/
+        postings_file = fopen ("posting" , "rb");
+        uint64_t doc_id;
+        uint16_t term_count;
+        uint32_t doc_len;
 
+        // Data structures to hold info, score for each docid and counts for each word in query.
         std::vector<unsigned long> info;
-        std::unordered_map<std::string, float> query_results; 
+        std::unordered_map<uint64_t, float> query_results; 
         std::unordered_map<std::string, int> query_term_count;
 
         std::istringstream qss(query_copy);
@@ -134,24 +128,19 @@ namespace SE{
             if(bsearch_indexing(query, indexing_in)){
                 load_block_info(info, indexing_in);
                 fseek(postings_file, info[BLOCK], SEEK_SET);
-                int doc_non = 1;
-                while(fgets(buffer , block_size , postings_file) != NULL && doc_non <= info[AMT]){
-                    if(buffer[0] != '\n'){
-                        std::string line(buffer);
-                        doc_id = line.substr(0, 11);
-                        occurences = stoi(line.substr(12, 3));
-                        doc_len = stoi(line.substr(16, 5));
-                        query_results[doc_id] += bm25(doc_len, avg_doc_len, doc_amt, info[AMT], occurences, query_term_count[query]);
-                        doc_non++;
-                    }
-                }
+                int docs_read = 0;
+                do{
+                    fread(&doc_id, sizeof(uint64_t), 1, postings_file);
+                    fread(&term_count, sizeof(uint16_t), 1, postings_file);
+                    fread(&doc_len, sizeof(uint32_t), 1, postings_file);
+                    query_results[doc_id] += bm25(doc_len, avg_doc_len, doc_amt, info[AMT], term_count, query_term_count[query]);
+                    docs_read++;
+                }while(docs_read < info[AMT]);
             }
             info.clear();
         }
         print_query_ranking(query_results);
         posting_in.close();
         indexing_in.close();
-        double duration = (clock() - start ) / (double) CLOCKS_PER_SEC;
-        std::cout << duration << std::endl;
     }
 }

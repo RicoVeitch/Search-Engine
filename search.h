@@ -1,5 +1,4 @@
-#ifndef SEARCH_H 
-#define SEARCH_H
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -46,12 +45,12 @@ namespace SE{
      * @param tf: term frequncy.
      * @param tq: term query frequncy.
     */
-    float bm25(int dl, float adl, int N, long nt, int tf, int tq);
+    float bm25(uint32_t dl, float adl, int N, long nt, uint16_t tf, int tq);
     /**
      * Prints the results of the search in decending order according the bm25 results.
      * @param query_results: maps docID to its score.
     */
-    void print_query_ranking(std::unordered_map<std::string, float> &query_results);
+    void print_query_ranking(std::unordered_map<uint64_t, float> &query_results);
     /**
      * Loads in the amount of documents and the average document length.
     */
@@ -61,5 +60,3 @@ namespace SE{
     */
     void search(std::string query);
 }
-
-#endif
