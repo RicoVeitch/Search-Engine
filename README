@@ -1,0 +1,10 @@
+To compile:
+g++ -std=c++11 search.cpp main.cpp indexer.cpp -o search
+
+To run:
+    - to index: ./search -i path_to_wsj.xml
+    - to search: ./search -s testing_file
+
+Output files:
+posting_list: the posting list (binary)
+indexing: the index list (binary)

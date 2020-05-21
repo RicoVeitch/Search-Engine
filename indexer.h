@@ -12,6 +12,7 @@
 #include <math.h>
 
 namespace SE{
+    const uint8_t POST_ENTRY_SIZE = 14;
     const std::unordered_set<std::string> stop_words({"i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", 
     "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", 
     "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", 
@@ -19,8 +20,7 @@ namespace SE{
     "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", 
     "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", 
     "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", 
-    "very", "s", "t", "can", "will", "just", "don", "should", "now"});
-    extern const size_t doc_size = 14;
+    "very", "s", "t", "can", "will", "just", "don", "should", "now"});  // taken from https://gist.github.com/sebleier/554280
     /**
      * Converts a string to lower case.  
      * @param s: string to convert.
@@ -49,9 +49,9 @@ namespace SE{
      * @param dict: the dictionary mapping words to the documents that they appear in along with the counts.
      * @param doc_lengths: maps documents to the length.
     */
-    void parse(std::map<std::string, std::unordered_map<std::string, int> > &dict, std::unordered_map<std::string, int> &doc_lengths);
+    void parse(std::string wsj_path, std::map<std::string, std::unordered_map<std::string, int> > &dict, std::unordered_map<std::string, int> &doc_lengths);
     /**
      * Entry point.
     */
-    void index();
+    void index(std::string wsj_path);
 }

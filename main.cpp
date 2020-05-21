@@ -1,12 +1,12 @@
-#include<iostream>
+#include <iostream>
 #include "search.h"
 #include "indexer.h"
 
 void help(){
     std::cerr << "USAGE: ./search" << " <option> <file>\n"
-        << "Options:\n"
-        << "-i wsj.xml, -- to preform indexing on the data\n"
-        << "-s query, -- to search for a query" << std::endl;
+        << "Options and their files:\n"
+        << "-i <path to wsj.xml file> -- to preform indexing on the wsj.xml file\n"
+        << "-s <query test file> -- to search for a query\n";
 }
 
 int main(int argc, char** argv) {
@@ -16,8 +16,11 @@ int main(int argc, char** argv) {
     }
     std::string option = argv[1];
     if(option == "-i"){
-        std::cout << "Index" << std::endl;
-        SE::index();
+        if(argc != 3){
+            help();
+            return EXIT_FAILURE;
+        }
+        SE::index(std::string(argv[2]));
     }else if(option == "-s"){ 
         std::string raw_query;
         while(std::getline(std::cin, raw_query)) {
@@ -32,7 +35,7 @@ int main(int argc, char** argv) {
                 }
             }
             query.pop_back();
-            std::cout << "Seaching for: " << query << std::endl;
+            // std::cout << "Seaching for: " << query << std::endl;
             SE::search(query);
         }
     }else{

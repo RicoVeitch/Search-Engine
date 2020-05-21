@@ -1,43 +1,39 @@
 #include "indexer.h"
+#include "shared_const.h"
 
 namespace SE{
     void save_dict(std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths){
         std::ofstream index_out;
         std::ofstream posting_out;
-        index_out.open("indexing");
-        posting_out.open("posting", std::ofstream::binary);
-        unsigned long block_loc = 0;
-        const size_t doc_size = 14;
-        int most_occured = 0, longest_doc = 0, occurence_pad = 0, doc_len_pad = 0;
+        index_out.open(indexing_name, std::ofstream::binary);
+        posting_out.open(posting_name, std::ofstream::binary);
+        uint64_t block_loc = 0;
+        uint32_t longest_doc = 0;
+        std::string word;
 
         for (auto it : dict) {
-            index_out << "~" << it.first << " "; // << " ";
-            //unordered_map<string, int> internal_map = it.second;
+            word = it.first;
+            word.resize(MAX_WORD_LEN);
+            index_out.write(word.c_str(), word.size());
             for (auto it2: it.second) {
-                //              Doc id.            term occurence      doc len
-                if(it2.second > most_occured){
-                    most_occured = it2.second;
-                }
-                if(doc_lengths[it2.first] > longest_doc){
-                    longest_doc = doc_lengths[it2.first];
-                }
-
+                longest_doc = std::max(longest_doc, doc_lengths[it2.first]);
                 posting_out.write((char*)&it2.first, sizeof(it2.first));
                 posting_out.write((char*)&it2.second, sizeof(it2.second));
-                posting_out.write((char*)&doc_lengths[it2.first], sizeof(doc_lengths[it2.first])); // CHECK THIS
+                posting_out.write((char*)&doc_lengths[it2.first], sizeof(doc_lengths[it2.first]));
 
             }
-            index_out << it.second.size() <<  " " << block_loc << "\n";
-            block_loc += (it.second.size() * doc_size);
+            uint32_t word_count = it.second.size();
+            index_out.write((char*)&word_count, sizeof(word_count));
+            index_out.write((char*)&block_loc, sizeof(block_loc));
+            block_loc += (word_count * POST_ENTRY_SIZE);
         }
-        // std::cout << "most occurence: " << most_occured << " longest doc: " << longest_doc << std::endl;
         index_out.close();
         posting_out.close();
     }
 
     void save_info(std::unordered_map<uint64_t, uint32_t> &doc_lengths){
         std::ofstream info_out;
-        info_out.open("info");
+        info_out.open(info_name);
         unsigned long total = 0;
         for(auto len : doc_lengths){
             total += len.second;
@@ -73,7 +69,7 @@ namespace SE{
         }
     }
 
-    void parse(std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths){
+    void parse(std::string wsj_path, std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths){
         std::string line;
         std::string curr_doc;
         int done = 0;
@@ -83,7 +79,7 @@ namespace SE{
         std::regex xml_token("\\</?.+\\>");
         std::regex doc_header("^WSJ(\\d+-\\d+)$");
         std::ifstream infile;
-        infile.open("wsj.xml");
+        infile.open(wsj_path);
         if(infile.is_open()){
             while(getline(infile, line)){ // for line in file
                 std::istringstream iss(line);
@@ -95,8 +91,8 @@ namespace SE{
                         curr_doc = line.substr(3, line.size());
                         curr_doc.erase(6, 1);
                         doc_id = static_cast<uint64_t>(std::stoull(curr_doc));
-                        to_lower(line);
-                        dict[line][doc_id]++;
+                        // to_lower(line);
+                        //dict[line][doc_id]++;
                         done++;
                         if(done % 1000 == 0){
                             std::cout << done << "\n";
@@ -121,14 +117,16 @@ namespace SE{
                 }
             }
             infile.close();
+        }else{
+            std::cout << "wsj.xml not found in provided path\n";
         }
     }
 
-    void index(){
+    void index(std::string wsj_path){
         std::map<std::string, std::unordered_map<uint64_t, unsigned short> > dict; // word: doc_id: amount
         std::unordered_map<uint64_t, uint32_t> doc_lengths; // doc_id: doc_length
         std::cout << "PARSING" << std::endl;
-        parse(dict, doc_lengths);
+        parse(wsj_path, dict, doc_lengths);
         std::cout << "SAVING DICT" << std::endl;
         save_dict(dict, doc_lengths);
         std::cout << "SAVING INFO" << std::endl;
