@@ -3,6 +3,7 @@
 *.dSYM
 *.xml
 *.pdf
+*.txt
 indexing
 info
 posting_list

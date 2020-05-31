@@ -10,6 +10,8 @@ void help(){
 }
 
 int main(int argc, char** argv) {
+    SE::Indexer indexer;
+    SE::Search search;
     if(argc <= 1){
         help();
         return EXIT_FAILURE;
@@ -20,23 +22,21 @@ int main(int argc, char** argv) {
             help();
             return EXIT_FAILURE;
         }
-        SE::index(std::string(argv[2]));
+        indexer.index(std::string(argv[2]));
     }else if(option == "-s"){ 
         std::string raw_query;
         while(std::getline(std::cin, raw_query)) {
-            std::string query = "";
             std::istringstream iss(raw_query);
-            while (getline(iss, raw_query, ' ')){
-                std::vector<std::string> clean_word;
-                SE::clean_string(raw_query, clean_word);
-                for(std::string word : clean_word){
-                    if(SE::stop_words.find(word) == SE::stop_words.end())
-                        query += word + " ";
+            std::string query;
+            std::string token;
+            while(iss >> token){
+                if(indexer.stop_words.find(token) == indexer.stop_words.end()){
+                    query += token + " ";
                 }
+                std::cout << token << "\n";
             }
             query.pop_back();
-            // std::cout << "Seaching for: " << query << std::endl;
-            SE::search(query);
+            search.search(query);
         }
     }else{
         help();

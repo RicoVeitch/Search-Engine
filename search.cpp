@@ -6,7 +6,7 @@
 
 namespace SE{
 
-    bool bsearch_indexing(std::string target_term, std::ifstream &indexing_in){
+    bool Search::bsearch_indexing(std::string target_term, std::ifstream &indexing_in){
         target_term.resize(64);
         uint64_t left = 0, right = 0, mid = 0;
         int n = (int) target_term.length();
@@ -35,17 +35,17 @@ namespace SE{
         return false;
     }
 
-    float bm25(uint32_t dl, float adl, int N, uint32_t nt, uint16_t tf, int tq){
-        float K = k1 * ((1-b) + ((b * dl) / adl));
+    double Search::bm25(uint32_t dl, float adl, int N, uint32_t nt, uint16_t tf, int tq){
+        double K = k1 * ((1-b) + ((b * dl) / adl));
         return log2((N - nt + 0.5) / (nt + 0.5)) * ((k1 + 1) * tf) / (K + tf) * ((k3 + 1) * tq) / (k3 + tq);
     }
 
-    void print_query_ranking(std::unordered_map<uint64_t, float> &query_results){
+    void Search::print_query_ranking(std::unordered_map<uint64_t, double> &query_results){
         int max_docs = 10;
-        std::vector<std::pair<uint64_t, float> > res;
-        std::copy(query_results.begin(), query_results.end(), std::back_inserter<std::vector<std::pair<uint64_t, float>>>(res));
+        std::vector<std::pair<uint64_t, double> > res;
+        std::copy(query_results.begin(), query_results.end(), std::back_inserter<std::vector<std::pair<uint64_t, double>>>(res));
         sort(res.begin(), res.end(),
-                [](const std::pair<uint64_t, float>& l, std::pair<uint64_t, float>& r) {
+                [](const std::pair<uint64_t, double>& l, std::pair<uint64_t, double>& r) {
                     if (l.second != r.second)
                         return l.second > r.second;
 
@@ -59,7 +59,7 @@ namespace SE{
         }
     }
 
-    void load_info(int &doc_amt, int &avg_doc_len){
+    void Search::load_info(int &doc_amt, int &avg_doc_len){
         std::ifstream info_in;
         std::string line;
         info_in.open(info_name);
@@ -70,7 +70,7 @@ namespace SE{
         info_in.close();
     }
 
-    void search(std::string query){
+    void Search::search(std::string query){
         std::string query_copy = query;
 
         // indexing information
@@ -91,7 +91,7 @@ namespace SE{
         uint32_t doc_len;
 
         // Data structures to hold info, score for each docid and counts for each word in query.
-        std::unordered_map<uint64_t, float> query_results; 
+        std::unordered_map<uint64_t, double> query_results; 
         std::unordered_map<std::string, int> query_term_count;
 
         std::istringstream qss(query_copy);

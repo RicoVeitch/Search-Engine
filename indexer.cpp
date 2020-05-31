@@ -2,7 +2,17 @@
 #include "shared_const.h"
 
 namespace SE{
-    void save_dict(std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths){
+    const uint8_t Indexer::POST_ENTRY_SIZE = 14;
+    const std::unordered_set<std::string> Indexer::stop_words({"i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", 
+    "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", 
+    "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", 
+    "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", 
+    "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", 
+    "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", 
+    "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", 
+    "very", "s", "t", "can", "will", "just", "don", "should", "now"});
+
+    void Indexer::save_dict(std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths){
         std::ofstream index_out;
         std::ofstream posting_out;
         index_out.open(indexing_name, std::ofstream::binary);
@@ -31,7 +41,7 @@ namespace SE{
         posting_out.close();
     }
 
-    void save_info(std::unordered_map<uint64_t, uint32_t> &doc_lengths){
+    void Indexer::save_info(std::unordered_map<uint64_t, uint32_t> &doc_lengths){
         std::ofstream info_out;
         info_out.open(info_name);
         unsigned long total = 0;
@@ -44,85 +54,69 @@ namespace SE{
         info_out.close();
     }
 
-    void clean_string(std::string &line, std::vector<std::string> &res){
-        int start = 0;
-        std::string token;
-        for(int c = 0; c < line.length(); c++){
-            if(!std::isalnum(line[c])){
-                if(line[c] == '%'){ 
-                    res.push_back("%");
-                } else if(line[c] == '.' && (c != 0 && c != line.length() - 1) && (std::isalnum(line[c-1]) && std::isalnum(line[c+1]))){ // for decimal
-                    continue;
-                }
-                token = line.substr(start, c-start);
-                if(token.length() > 0){
-                    to_lower(token);
-                    res.push_back(token);
-                }
-                start = c + 1;
-            }
+    char *Indexer::clean_token(){
+        while(!isalnum(*curr) && *curr != '<' && *curr != '\0'){
+                curr++;
         }
-        token = line.substr(start, line.length()-start);
-        if(token.length() > 0){
-            to_lower(token);
-            res.push_back(token);
-        }
-    }
-
-    void parse(std::string wsj_path, std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths){
-        std::string line;
-        std::string curr_doc;
-        int done = 0;
-        int first_cut, second_cut, diff;
-        uint64_t doc_id;
-        // regex word("\\w+(\\.?-?\\w+)*");
-        std::regex xml_token("\\</?.+\\>");
-        std::regex doc_header("^WSJ(\\d+-\\d+)$");
-        std::ifstream infile;
-        infile.open(wsj_path);
-        if(infile.is_open()){
-            while(getline(infile, line)){ // for line in file
-                std::istringstream iss(line);
-                while (getline(iss, line, ' ')){ // for word in line
-                    if(line.length() == 0 || (line.front() == '<' && line.back() == '>')){
-                        continue;
-                    }
-                    if(regex_match(line, doc_header)){
-                        curr_doc = line.substr(3, line.size());
-                        curr_doc.erase(6, 1);
-                        doc_id = static_cast<uint64_t>(std::stoull(curr_doc));
-                        // to_lower(line);
-                        //dict[line][doc_id]++;
-                        done++;
-                        if(done % 1000 == 0){
-                            std::cout << done << "\n";
-                        }
-                        continue;
-                    }
-                    else if(line.front() != '<' && line.back() == '>'){
-                        line = line.substr(0, line.find('<'));
-                    }
-                    else if(line.front() == '<' && line.back() != '>'){
-                        line = line.substr(line.find('>') + 1);
-                    }
-
-                    std::vector<std::string> clean_line;
-                    clean_string(line, clean_line);
-                    for(std::string word : clean_line){
-                        if(stop_words.find(word) == stop_words.end()){
-                            dict[word][doc_id]++;
-                            doc_lengths[doc_id]++;
-                        }
-                    }
-                }
+        char *start = curr;
+        if(isalnum(*curr)){
+            while(isalnum(*curr) || *curr == '-'){
+                curr++;
             }
-            infile.close();
+        }else if(*curr == '<'){
+            while(*curr != '>'){
+                curr++;
+            }
+            curr++;
         }else{
-            std::cout << "wsj.xml not found in provided path\n";
+            return NULL;
         }
+        memcpy(token_buffer, start, curr - start);
+        token_buffer[curr - start] = '\0';
+        return token_buffer;
     }
 
-    void index(std::string wsj_path){
+    void Indexer::parse(std::string wsj_path, std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths){
+        std::string curr_doc;
+        std::string token;
+        char *raw_token; 
+        int done = 0;
+        uint64_t doc_id; 
+        bool is_docid = false;
+
+        FILE *fp;
+        fp = fopen(wsj_path.c_str(), "r");
+        while (fgets(buffer, sizeof(buffer), fp) != NULL){
+        //cout << buffer << endl;
+            curr = buffer;
+            while((raw_token = clean_token()) != NULL){
+                if(strcmp(raw_token, "<DOCNO>") == 0){
+                    is_docid = true;
+                }else if(is_docid){
+                    token = std::string(raw_token);
+                    curr_doc = token.substr(3, token.size());
+                    curr_doc.erase(6, 1);
+                    doc_id = static_cast<uint64_t>(std::stoull(curr_doc));
+                    done++;
+                    if(done % 1000 == 0){
+                        std::cout << done << "\n";
+                    }
+                    is_docid = false;
+                }
+                else if(raw_token[0] != '<'){
+                    token = std::string(raw_token);
+                    to_lower(token);
+                    if(stop_words.find(token) == stop_words.end()){
+                        dict[token][doc_id]++;
+                        doc_lengths[doc_id]++;
+                    }
+                }
+            }
+        }
+
+    }
+
+    void Indexer::index(std::string wsj_path){
         std::map<std::string, std::unordered_map<uint64_t, unsigned short> > dict; // word: doc_id: amount
         std::unordered_map<uint64_t, uint32_t> doc_lengths; // doc_id: doc_length
         std::cout << "PARSING" << std::endl;
