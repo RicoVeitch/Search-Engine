@@ -1,4 +1,5 @@
 Vagrant.configure("2") do |config|
+    config.vm.box = "ubuntu/xenial64"
     config.vm.define "webserver" do |webserver|
         webserver.vm.hostname = "webserver"
         webserver.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
@@ -7,12 +8,14 @@ Vagrant.configure("2") do |config|
         webserver.vm.provision "shell", inline: <<-SHELL
             apt-get update
             apt-get install -y apache2 php libapache2-mod-php php-mysql
+            cp /vagrant/website.conf /etc/apache2/sites-available/
             # activate website conf
-            a2ensite test-website
+            a2ensite website
             # disable the default website provided by Apache
             a2dissite 000-default
             # reload the webserver configuration
             service apache2 reload
+            # see at http://127.0.0.1:8080/ 
         SHELL
     end
 end
