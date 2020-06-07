@@ -40,7 +40,7 @@ namespace SE{
             */
             void save_info(std::unordered_map<uint64_t, uint32_t> &doc_lengths);
             /**
-             * Cleans a string of any non alphanumeric characters e.g. [100-yards] -> [100], [yards]
+             * Cleans a string of any non alphanumeric characters
             */
             char *clean_token();
             /**
