@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <string>  
+#include <cstring>
 namespace SE{
     class Server_Socket{
         private:

@@ -41,6 +41,6 @@
         if(socket_recv($client_socket , $buf , 1024, MSG_WAITALL ) === FALSE){
             die("socket_recv() failed: reason: \n" . socket_strerror(socket_last_error()) . "\n");
         }
-        echo "\nrecived: " . $buf;
+        echo nl2br("\n" . $buf);
    }
 ?>

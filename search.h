@@ -39,7 +39,7 @@ namespace SE{
              * Prints the results of the search in decending order according the bm25 results.
              * @param query_results: maps docID to its score.
             */
-            void print_query_ranking(std::unordered_map<uint64_t, double> &query_results);
+            std::string print_query_ranking(std::unordered_map<uint64_t, double> &query_results);
             /**
              * Loads in the amount of documents and the average document length.
             */
@@ -47,6 +47,6 @@ namespace SE{
             /**
              * Entry point.
             */
-            void search(std::string query);
+            std::string search(std::string query);
     };
 }

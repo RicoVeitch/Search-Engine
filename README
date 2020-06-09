@@ -1,5 +1,5 @@
 To compile:
-g++ -std=c++11 search.cpp main.cpp indexer.cpp -o search
+g++ -std=c++11 search.cpp main.cpp indexer.cpp server_socket.cpp -o search_engine
 
 To run:
     - to index: ./search -i path_to_wsj.xml

@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <math.h>
+#include <string.h> 
+#include <cstring>
 
 namespace SE{
     class Indexer{
@@ -17,8 +19,8 @@ namespace SE{
             char token_buffer[1024 * 1024];
             char buffer[1024 * 1024];
             char *curr;
-        public:
             const static uint8_t POST_ENTRY_SIZE;
+        public:
             const static std::unordered_set<std::string> stop_words;  // taken from https://gist.github.com/sebleier/554280
             /**
              * Converts a string to lower case.  
@@ -41,6 +43,7 @@ namespace SE{
             void save_info(std::unordered_map<uint64_t, uint32_t> &doc_lengths);
             /**
              * Cleans a string of any non alphanumeric characters
+             * @return char*, a pointer to the cleaned word.
             */
             char *clean_token();
             /**

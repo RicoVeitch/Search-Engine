@@ -40,8 +40,9 @@ namespace SE{
         return log2((N - nt + 0.5) / (nt + 0.5)) * ((k1 + 1) * tf) / (K + tf) * ((k3 + 1) * tq) / (k3 + tq);
     }
 
-    void Search::print_query_ranking(std::unordered_map<uint64_t, double> &query_results){
+    std::string Search::print_query_ranking(std::unordered_map<uint64_t, double> &query_results){
         int max_docs = 10;
+        std::string output = "";
         std::vector<std::pair<uint64_t, double> > res;
         std::copy(query_results.begin(), query_results.end(), std::back_inserter<std::vector<std::pair<uint64_t, double>>>(res));
         sort(res.begin(), res.end(),
@@ -52,11 +53,18 @@ namespace SE{
                     return l.first < r.first;
                 });
         std::string filename;
-        for(int doc = 0; doc < (int) res.size(); doc++){
+        // for(int doc = 0; doc < (int) res.size(); doc++){
+        //     filename = std::to_string(res[doc].first);
+        //     filename.insert(6, 1, '-');
+        //     std::cout << "WSJ" << filename << " "<< res[doc].second << "\n"; // res[doc].first
+        // }
+        for(int doc = 0; doc < 10; doc++){
             filename = std::to_string(res[doc].first);
             filename.insert(6, 1, '-');
-            std::cout << "WSJ" << filename << " "<< res[doc].second << "\n"; // res[doc].first
+            //std::cout << "WSJ" << filename << " "<< res[doc].second << "\n";
+            output += "WSJ" + filename + "\n";
         }
+        return output;
     }
 
     void Search::load_info(int &doc_amt, int &avg_doc_len){
@@ -70,7 +78,7 @@ namespace SE{
         info_in.close();
     }
 
-    void Search::search(std::string query){
+    std::string Search::search(std::string query){
         std::string query_copy = query;
 
         // indexing information
@@ -117,8 +125,8 @@ namespace SE{
                 }while(docs_read < term_doc_amt);
             }
         }
-        print_query_ranking(query_results);
         indexing_in.close();
         fclose(posting_in);
+        return print_query_ranking(query_results);
     }
 }
