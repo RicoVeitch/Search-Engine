@@ -37,5 +37,10 @@
         if(socket_send($client_socket , $query , strlen($query) , 0) === false){
             die("socket_send() failed: reason: \n" . socket_strerror(socket_last_error()) . "\n");
         }
+
+        if(socket_recv($client_socket , $buf , 1024, MSG_WAITALL ) === FALSE){
+            die("socket_recv() failed: reason: \n" . socket_strerror(socket_last_error()) . "\n");
+        }
+        echo "\nrecived: " . $buf;
    }
 ?>
