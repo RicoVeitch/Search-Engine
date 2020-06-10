@@ -117,9 +117,9 @@ namespace SE{
                 fseek(posting_in, block_loc, SEEK_SET);
                 int docs_read = 0;
                 do{
-                    fread(&doc_id, sizeof(uint64_t), 1, posting_in);
-                    fread(&term_count, sizeof(uint16_t), 1, posting_in);
-                    fread(&doc_len, sizeof(uint32_t), 1, posting_in);
+                    fread(&doc_id, sizeof(doc_id), 1, posting_in);
+                    fread(&term_count, sizeof(term_count), 1, posting_in);
+                    fread(&doc_len, sizeof(doc_len), 1, posting_in);
                     query_results[doc_id] += bm25(doc_len, avg_doc_len, doc_amt, term_doc_amt, term_count, query_term_count[query]);
                     docs_read++;
                 }while(docs_read < term_doc_amt);
@@ -127,6 +127,9 @@ namespace SE{
         }
         indexing_in.close();
         fclose(posting_in);
+        if(query_results.empty()){
+            return "No results found.\n";
+        }
         return print_query_ranking(query_results);
     }
 }

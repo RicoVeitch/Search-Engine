@@ -52,10 +52,10 @@ int main(int argc, char** argv) {
                 if(indexer.stop_words.find(token) == indexer.stop_words.end()){
                     query += token + " ";
                 }
-                std::cout << token << "\n";
             }
             query.pop_back();
             std::string result = search.search(query);
+            std::cout << result << "\n";
             server_socket.send_client(result);
         }
 

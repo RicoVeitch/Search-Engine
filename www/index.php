@@ -42,5 +42,16 @@
             die("socket_recv() failed: reason: \n" . socket_strerror(socket_last_error()) . "\n");
         }
         echo nl2br("\n" . $buf);
+
+        $db_host   = '192.168.2.12';
+        $db_name   = 'fvision';
+        $db_user   = 'webuser';
+        $db_passwd = 'insecure_db_pw';
+        $pdo_dsn = "mysql:host=$db_host;dbname=$db_name";
+        $pdo = new PDO($pdo_dsn, $db_user, $db_passwd);
+        $q = $pdo->query("SELECT * FROM history");
+        while($entry = $q->fetch()){
+            echo $entry['query'].": ".$entry['q_count'];
+        }
    }
 ?>
