@@ -58,10 +58,10 @@ namespace SE{
         //     filename.insert(6, 1, '-');
         //     std::cout << "WSJ" << filename << " "<< res[doc].second << "\n"; // res[doc].first
         // }
-        for(int doc = 0; doc < 10; doc++){
+        int cap = std::min((int) res.size(), 10);
+        for(int doc = 0; doc < cap; doc++){
             filename = std::to_string(res[doc].first);
             filename.insert(6, 1, '-');
-            //std::cout << "WSJ" << filename << " "<< res[doc].second << "\n";
             output += "WSJ" + filename + "\n";
         }
         return output;

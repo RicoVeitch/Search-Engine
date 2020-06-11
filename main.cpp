@@ -41,10 +41,11 @@ int main(int argc, char** argv) {
         // }
         SE::Server_Socket server_socket;
         server_socket.set_up();
-        char *token;
+        char *request;
         std::string raw_query;
-        while((token = server_socket.accept_client()) != NULL){
-            raw_query = std::string(token);
+        std::cout << "new\n";
+        while((request = server_socket.accept_client()) != NULL){
+            raw_query = std::string(request);
             std::istringstream iss(raw_query);
             std::string query;
             std::string token;
@@ -55,7 +56,6 @@ int main(int argc, char** argv) {
             }
             query.pop_back();
             std::string result = search.search(query);
-            std::cout << result << "\n";
             server_socket.send_client(result);
         }
 

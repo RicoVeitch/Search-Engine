@@ -3,4 +3,3 @@ CREATE TABLE history (
   q_count INT,
   PRIMARY KEY (query)
 );
-INSERT INTO history VALUES ('test query', 1);

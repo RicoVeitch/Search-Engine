@@ -9,7 +9,6 @@
 
 <!-- <p>Showing contents of papers table:</p> -->
 
-<table border="1">
 <form autocomplete="off" action="" method="POST">
 <label for="query">Query: </label>
   <input id="query", name="query">
@@ -43,15 +42,20 @@
         }
         echo nl2br("\n" . $buf);
 
-        $db_host   = '192.168.2.12';
-        $db_name   = 'fvision';
-        $db_user   = 'webuser';
-        $db_passwd = 'insecure_db_pw';
+        $db_host = '192.168.2.12';
+        $db_name = 'fvision';
+        $db_user = 'webuser';
+        $db_passwd = 'bad_db_pwd';
         $pdo_dsn = "mysql:host=$db_host;dbname=$db_name";
         $pdo = new PDO($pdo_dsn, $db_user, $db_passwd);
         $q = $pdo->query("SELECT * FROM history");
         while($entry = $q->fetch()){
-            echo $entry['query'].": ".$entry['q_count'];
+            echo nl2br($entry['query'].": ".$entry['q_count']."\n");
         }
+        
+        $update = "INSERT INTO history VALUES ('$query', 1) ON DUPLICATE KEY UPDATE q_count = q_count + 1";
+        $q = $pdo->query($update);
+        
+        
    }
 ?>

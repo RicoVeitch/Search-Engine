@@ -7,12 +7,9 @@ Vagrant.configure("2") do |config|
         backend.vm.provision "shell", inline: <<-SHELL
             apt-get update
             apt-get install -y g++
-            # sudo g++ /vagrant/test_socket.cpp -o /vagrant/test
-            # sudo g++ -std=c++11 /vagrant/test_socket.cpp /vagrant/server_socket.cpp -o /vagrant/test
             cd /vagrant
-            # sudo g++ -std=c++11 /vagrant/search.cpp /vagrant/main.cpp /vagrant/indexer.cpp /vagrant/server_socket.cpp -o /vagrant/search_engine
             g++ -std=c++11 search.cpp main.cpp indexer.cpp server_socket.cpp -o search_engine
-            # ./search_engine -s
+            ./search_engine -s &
         SHELL
     end
 
