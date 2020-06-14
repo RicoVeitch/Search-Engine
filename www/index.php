@@ -7,6 +7,17 @@
 <body>
 <h1>Seach Engine test page</h1>
 
+</style>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#query" ).autocomplete({
+      source: 'recommend.php'
+    });
+  } );
+</script>
 <!-- <p>Showing contents of papers table:</p> -->
 
 <form autocomplete="off" action="" method="POST">
