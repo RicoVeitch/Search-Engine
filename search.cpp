@@ -106,8 +106,8 @@ namespace SE{
         int cap = std::min((int) res.size(), 10);
         for(int doc = 0; doc < cap; doc++){
             filename = std::to_string(res[doc].first);
-            filename.insert(6, 1, '-');
-            output += "WSJ" + filename + "\n";
+            // filename.insert(6, 1, '-');
+            output += filename + "\n"; // "WSJ" + 
         }
         return output;
     }
