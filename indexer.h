@@ -20,6 +20,9 @@ namespace SE{
             char buffer[1024 * 1024];
             char *curr;
             const static uint8_t POST_ENTRY_SIZE;
+            std::map<std::string, std::unordered_map<uint64_t, unsigned short> > dict; // word: doc_id: amount
+            std::unordered_map<uint64_t, uint32_t> doc_lengths; // doc_id: doc_length
+            std::map<uint64_t, std::pair<uint64_t, uint64_t>> doc_range;
         public:
             const static std::unordered_set<std::string> stop_words;  // taken from https://gist.github.com/sebleier/554280
             /**
@@ -35,12 +38,13 @@ namespace SE{
              * @param dict: the dictionary mapping words to the documents that they appear in along with the counts.
              * @param doc_lengths: maps documents to the length.
             */
-            void save_dict(std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths);
+            void save_dict();
             /**
              * Gets information on how many documents there are and the average length and stores it on disk
              * @param doc_lengths: maps documents to the length.
             */
-            void save_info(std::unordered_map<uint64_t, uint32_t> &doc_lengths);
+            void save_info();
+            void save_doc_range();
             /**
              * Cleans a string of any non alphanumeric characters
              * @return char*, a pointer to the cleaned word.
@@ -51,7 +55,7 @@ namespace SE{
              * @param dict: the dictionary mapping words to the documents that they appear in along with the counts.
              * @param doc_lengths: maps documents to the length.
             */
-            void parse(std::string wsj_path, std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths);
+            void parse(std::string wsj_path);
             /**
              * Entry point.
             */

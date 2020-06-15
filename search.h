@@ -25,6 +25,8 @@ namespace SE{
              * @return: true if the word exist in the inverted index.
             */
             bool bsearch_indexing(std::string target_term, std::ifstream &indexing_in);
+            std::pair<uint64_t, uint64_t> bsearch_range(uint64_t target_doc, std::ifstream &range_in);
+            std::string get_doc_content(uint64_t doc_id);
             /**
              * Calculates and return the bm25 value.
              * @param dl: document length.

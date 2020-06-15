@@ -6,4 +6,5 @@ namespace SE{
     const std::string indexing_name = "indexing";
     const std::string posting_name = "posting_list";
     const std::string info_name = "info";
+    const std::string range_name = "doc_locs";
 }

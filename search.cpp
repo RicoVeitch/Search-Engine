@@ -16,9 +16,9 @@ namespace SE{
         right = indexing_in.tellg();
 
         while(left <= right){
-            bool found = true;
+            // bool found = true;
             std::string word;
-            word.resize(MAX_WORD_LEN); // MAX_WORD_LEN
+            word.resize(MAX_WORD_LEN);
             mid = left + (right - left) / 2;
             mid -= (mid % INDEX_ENTRY_SIZE); // round down to nearest 76th, 
             indexing_in.seekg(mid);
@@ -33,6 +33,51 @@ namespace SE{
             }
         }
         return false;
+    }
+
+    std::pair<uint64_t, uint64_t> Search::bsearch_range(uint64_t target_doc, std::ifstream &range_in){
+        uint64_t left = 0, right = 0, mid = 0, doc_id;
+        std::pair<uint64_t, uint64_t> result;
+        range_in.seekg(0, range_in.beg);
+        left = range_in.tellg();
+        range_in.seekg(0, range_in.end);
+        right = range_in.tellg();
+
+        while(left <= right){
+            mid = left + (right - left) / 2;
+            mid -= (mid % (sizeof(uint64_t) * 3)); // round so mid is pointing to the start of an entry.
+            range_in.seekg(mid);
+            range_in.read((char*)&doc_id, sizeof(uint64_t));
+            if(doc_id > target_doc){
+                right = mid - (sizeof(uint64_t) * 3);
+            } else if(doc_id < target_doc){
+                left = mid + (sizeof(uint64_t) * 3);
+            } else{
+                break;
+            }
+        }
+        range_in.read((char*)&result.first, sizeof(uint64_t));
+        range_in.read((char*)&result.second, sizeof(uint64_t));
+        return result;
+    }
+
+    std::string Search::get_doc_content(uint64_t doc_id){
+        std::ifstream range_in;
+        std::ifstream wsj_in;
+        std::pair<uint64_t, uint64_t> loc;
+        uint64_t doc_len;
+        
+        range_in.open(range_name, std::ifstream::binary);
+        loc = bsearch_range(doc_id, range_in);
+        doc_len = loc.second - loc.first;
+        char* buffer = new char[doc_len + 1];
+
+        wsj_in.open("wsj.xml", std::ifstream::binary);
+        wsj_in.seekg(loc.first);
+        wsj_in.read(buffer, doc_len);
+        buffer[doc_len] = '\0';
+
+        return std::string(buffer);
     }
 
     double Search::bm25(uint32_t dl, float adl, int N, uint32_t nt, uint16_t tf, int tq){

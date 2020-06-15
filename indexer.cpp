@@ -12,7 +12,7 @@ namespace SE{
     "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", 
     "very", "s", "t", "can", "will", "just", "don", "should", "now"});
 
-    void Indexer::save_dict(std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths){
+    void Indexer::save_dict(){
         std::ofstream index_out;
         std::ofstream posting_out;
         index_out.open(indexing_name, std::ofstream::binary);
@@ -41,7 +41,7 @@ namespace SE{
         posting_out.close();
     }
 
-    void Indexer::save_info(std::unordered_map<uint64_t, uint32_t> &doc_lengths){
+    void Indexer::save_info(){
         std::ofstream info_out;
         info_out.open(info_name);
         unsigned long total = 0;
@@ -52,6 +52,17 @@ namespace SE{
         info_out << doc_lengths.size() << "\n";
         info_out << avg_doc_len;
         info_out.close();
+    }
+
+    void Indexer::save_doc_range(){
+        std::ofstream range_out;
+        range_out.open(range_name, std::ofstream::binary);
+        for(auto loc : doc_range){
+            range_out.write((char*)&loc.first, sizeof(loc.first)); // docid
+            range_out.write((char*)&loc.second.first, sizeof(loc.second.first)); // start
+            range_out.write((char*)&loc.second.second, sizeof(loc.second.second)); // finish
+        }
+        range_out.close();
     }
 
     char *Indexer::clean_token(){
@@ -76,21 +87,26 @@ namespace SE{
         return token_buffer;
     }
 
-    void Indexer::parse(std::string wsj_path, std::map<std::string, std::unordered_map<uint64_t, unsigned short> > &dict, std::unordered_map<uint64_t, uint32_t> &doc_lengths){
+    void Indexer::parse(std::string wsj_path){
         std::string curr_doc;
         std::string token;
         char *raw_token; 
         int done = 0;
         uint64_t doc_id; 
+        uint64_t start;
         bool is_docid = false;
 
         FILE *fp;
         fp = fopen(wsj_path.c_str(), "r");
         while (fgets(buffer, sizeof(buffer), fp) != NULL){
-        //cout << buffer << endl;
             curr = buffer;
             while((raw_token = clean_token()) != NULL){
-                if(strcmp(raw_token, "<DOCNO>") == 0){
+                if(strcmp(raw_token, "<DOC>") == 0){
+                    start = ftell(fp) - strlen("<DOC>") - 1;
+                }else if(strcmp(raw_token, "</DOC>") == 0){
+                    doc_range[doc_id].first = start;
+                    doc_range[doc_id].second = ftell(fp); //  - strlen("</DOC>")
+                }else if(strcmp(raw_token, "<DOCNO>") == 0){
                     is_docid = true;
                 }else if(is_docid){
                     token = std::string(raw_token);
@@ -117,13 +133,12 @@ namespace SE{
     }
 
     void Indexer::index(std::string wsj_path){
-        std::map<std::string, std::unordered_map<uint64_t, unsigned short> > dict; // word: doc_id: amount
-        std::unordered_map<uint64_t, uint32_t> doc_lengths; // doc_id: doc_length
         std::cout << "PARSING" << std::endl;
-        parse(wsj_path, dict, doc_lengths);
+        parse(wsj_path);
         std::cout << "SAVING DICT" << std::endl;
-        save_dict(dict, doc_lengths);
+        save_dict();
         std::cout << "SAVING INFO" << std::endl;
-        save_info(doc_lengths);
+        save_info();
+        save_doc_range();
     }
 }
