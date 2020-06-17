@@ -35,49 +35,62 @@ namespace SE{
         return false;
     }
 
-    std::pair<uint64_t, uint64_t> Search::bsearch_range(uint64_t target_doc, std::ifstream &range_in){
+    std::pair<uint64_t, uint64_t> Search::bsearch_range(uint64_t target_doc, std::ifstream &range_in, bool header){
         uint64_t left = 0, right = 0, mid = 0, doc_id;
         std::pair<uint64_t, uint64_t> result;
         range_in.seekg(0, range_in.beg);
         left = range_in.tellg();
         range_in.seekg(0, range_in.end);
         right = range_in.tellg();
-
         while(left <= right){
             mid = left + (right - left) / 2;
-            mid -= (mid % (sizeof(uint64_t) * 3)); // round so mid is pointing to the start of an entry.
+            mid -= (mid % (sizeof(uint64_t) * 5)); // round so mid is pointing to the start of an entry.
             range_in.seekg(mid);
             range_in.read((char*)&doc_id, sizeof(uint64_t));
             if(doc_id > target_doc){
-                right = mid - (sizeof(uint64_t) * 3);
+                right = mid - (sizeof(uint64_t) * 5);
             } else if(doc_id < target_doc){
-                left = mid + (sizeof(uint64_t) * 3);
+                left = mid + (sizeof(uint64_t) * 5);
             } else{
                 break;
             }
+        }
+        if(header){
+            range_in.seekg(mid + (sizeof(uint64_t) * 3)); // skip to the header
         }
         range_in.read((char*)&result.first, sizeof(uint64_t));
         range_in.read((char*)&result.second, sizeof(uint64_t));
         return result;
     }
 
-    std::string Search::get_doc_content(uint64_t doc_id){
+    std::string Search::get_doc_content(uint64_t doc_id, bool header){
         std::ifstream range_in;
         std::ifstream wsj_in;
         std::pair<uint64_t, uint64_t> loc;
         uint64_t doc_len;
+        std::string output;
         
         range_in.open(range_name, std::ifstream::binary);
-        loc = bsearch_range(doc_id, range_in);
+        loc = bsearch_range(doc_id, range_in, header);
         doc_len = loc.second - loc.first;
+        std::cout << doc_len << "\n";
         char* buffer = new char[doc_len + 1];
-
         wsj_in.open("wsj.xml", std::ifstream::binary);
         wsj_in.seekg(loc.first);
         wsj_in.read(buffer, doc_len);
         buffer[doc_len] = '\0';
+        output = std::string(buffer);
+        delete[] buffer;
 
-        return std::string(buffer);
+        if(header){
+            for(int i = 0; i < (int) output.size(); i++){
+                if(output[i] == '\n'){
+                    output[i] = ' ';
+                }
+            }
+        }
+        // std::cout << output << "\n";
+        return output;
     }
 
     double Search::bm25(uint32_t dl, float adl, int N, uint32_t nt, uint16_t tf, int tq){
@@ -85,9 +98,10 @@ namespace SE{
         return log2((N - nt + 0.5) / (nt + 0.5)) * ((k1 + 1) * tf) / (K + tf) * ((k3 + 1) * tq) / (k3 + tq);
     }
 
-    std::string Search::print_query_ranking(std::unordered_map<uint64_t, double> &query_results){
+    std::vector<uint64_t> Search::print_query_ranking(std::unordered_map<uint64_t, double> &query_results){
         int max_docs = 10;
-        std::string output = "";
+        //std::string output = "";
+        std::vector<uint64_t> output;
         std::vector<std::pair<uint64_t, double> > res;
         std::copy(query_results.begin(), query_results.end(), std::back_inserter<std::vector<std::pair<uint64_t, double>>>(res));
         sort(res.begin(), res.end(),
@@ -98,16 +112,12 @@ namespace SE{
                     return l.first < r.first;
                 });
         std::string filename;
-        // for(int doc = 0; doc < (int) res.size(); doc++){
-        //     filename = std::to_string(res[doc].first);
-        //     filename.insert(6, 1, '-');
-        //     std::cout << "WSJ" << filename << " "<< res[doc].second << "\n"; // res[doc].first
-        // }
         int cap = std::min((int) res.size(), 10);
         for(int doc = 0; doc < cap; doc++){
-            filename = std::to_string(res[doc].first);
-            // filename.insert(6, 1, '-');
-            output += filename + "\n"; // "WSJ" + 
+            // filename = std::to_string(res[doc].first);
+            // // filename.insert(6, 1, '-');
+            // output += filename + "\n"; // "WSJ" + 
+            output.push_back(res[doc].first);
         }
         return output;
     }
@@ -123,7 +133,10 @@ namespace SE{
         info_in.close();
     }
 
-    std::string Search::search(std::string query){
+    std::vector<uint64_t> Search::search(std::string query){
+        if(query.empty()){
+            return {};
+        }
         std::string query_copy = query;
 
         // indexing information
@@ -173,7 +186,7 @@ namespace SE{
         indexing_in.close();
         fclose(posting_in);
         if(query_results.empty()){
-            return "No results found.\n";
+            return {};
         }
         return print_query_ranking(query_results);
     }

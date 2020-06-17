@@ -13,10 +13,11 @@
 
 namespace SE{
     class Search{
-        const float k1 = 1.2;
-        const int k3 = 7;
-        const float b = 0.75;
-        const uint8_t INDEX_ENTRY_SIZE = 76;
+        private:
+            const float k1 = 1.2;
+            const int k3 = 7;
+            const float b = 0.75;
+            const uint8_t INDEX_ENTRY_SIZE = 76;
         public:
             /**
              * Preforms binary search on the inverted index.
@@ -25,8 +26,8 @@ namespace SE{
              * @return: true if the word exist in the inverted index.
             */
             bool bsearch_indexing(std::string target_term, std::ifstream &indexing_in);
-            std::pair<uint64_t, uint64_t> bsearch_range(uint64_t target_doc, std::ifstream &range_in);
-            std::string get_doc_content(uint64_t doc_id);
+            std::pair<uint64_t, uint64_t> bsearch_range(uint64_t target_doc, std::ifstream &range_in, bool header);
+            std::string get_doc_content(uint64_t doc_id, bool header);
             /**
              * Calculates and return the bm25 value.
              * @param dl: document length.
@@ -41,7 +42,7 @@ namespace SE{
              * Prints the results of the search in decending order according the bm25 results.
              * @param query_results: maps docID to its score.
             */
-            std::string print_query_ranking(std::unordered_map<uint64_t, double> &query_results);
+            std::vector<uint64_t> print_query_ranking(std::unordered_map<uint64_t, double> &query_results);
             /**
              * Loads in the amount of documents and the average document length.
             */
@@ -49,6 +50,6 @@ namespace SE{
             /**
              * Entry point.
             */
-            std::string search(std::string query);
+            std::vector<uint64_t> search(std::string query);
     };
 }

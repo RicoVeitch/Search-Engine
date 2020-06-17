@@ -57,10 +57,13 @@ namespace SE{
     void Indexer::save_doc_range(){
         std::ofstream range_out;
         range_out.open(range_name, std::ofstream::binary);
-        for(auto loc : doc_range){
+        for(auto loc : doc_ranges){
+            //std::cout << loc.first << " " << loc.second.doc_start << " " << loc.second.title_start << " " << loc.second.title_end << " " << loc.second.doc_end << "\n";
             range_out.write((char*)&loc.first, sizeof(loc.first)); // docid
-            range_out.write((char*)&loc.second.first, sizeof(loc.second.first)); // start
-            range_out.write((char*)&loc.second.second, sizeof(loc.second.second)); // finish
+            range_out.write((char*)&loc.second.doc_start, sizeof(loc.second.doc_start));
+            range_out.write((char*)&loc.second.doc_end, sizeof(loc.second.doc_end));
+            range_out.write((char*)&loc.second.title_start, sizeof(loc.second.title_start));
+            range_out.write((char*)&loc.second.title_end, sizeof(loc.second.title_end));
         }
         range_out.close();
     }
@@ -74,6 +77,7 @@ namespace SE{
             while(isalnum(*curr) || *curr == '-'){
                 curr++;
             }
+            // <HL>
         }else if(*curr == '<'){
             while(*curr != '>'){
                 curr++;
@@ -92,8 +96,9 @@ namespace SE{
         std::string token;
         char *raw_token; 
         int done = 0;
+        size_t header_len = 0, doc_tag_len = 5, h_diff = 3, h_end_len = 5;
         uint64_t doc_id; 
-        uint64_t start;
+        Doc_Range d_range;
         bool is_docid = false;
 
         FILE *fp;
@@ -101,11 +106,19 @@ namespace SE{
         while (fgets(buffer, sizeof(buffer), fp) != NULL){
             curr = buffer;
             while((raw_token = clean_token()) != NULL){
+                // std::cout << curr-buffer << std::endl;
+                //std::cout << header_len << std::endl;
                 if(strcmp(raw_token, "<DOC>") == 0){
-                    start = ftell(fp) - strlen("<DOC>") - 1;
+                    d_range.doc_start = ftell(fp) - doc_tag_len - 1; // - newline
                 }else if(strcmp(raw_token, "</DOC>") == 0){
-                    doc_range[doc_id].first = start;
-                    doc_range[doc_id].second = ftell(fp); //  - strlen("</DOC>")
+                    d_range.doc_end = ftell(fp);
+                    doc_ranges[doc_id] = d_range;
+                }else if(strcmp(raw_token, "<HL>") == 0){
+                    header_len = 0;
+                }else if(strcmp(raw_token, "</HL>") == 0){
+                    header_len += (curr-buffer) - h_diff; // 3 = diff(/hl and hl)
+                    d_range.title_start = ftell(fp) - header_len;
+                    d_range.title_end = ftell(fp) - h_end_len - 1;
                 }else if(strcmp(raw_token, "<DOCNO>") == 0){
                     is_docid = true;
                 }else if(is_docid){
@@ -128,6 +141,7 @@ namespace SE{
                     }
                 }
             }
+            header_len += curr-buffer;
         }
 
     }

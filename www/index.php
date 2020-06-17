@@ -30,6 +30,7 @@
   $submitbutton= $_POST['submitbutton'];
   $port = '10002';
   $ip_address = '192.168.2.10';
+  $doc_id_len = 10;
 
   // if (isset($_GET['reset'])) {
   //   header('Location: test.xml');
@@ -67,13 +68,21 @@
         die("socket_send() failed: reason: \n" . socket_strerror(socket_last_error()) . "\n");
       }
 
-      if(socket_recv($client_socket , $buf , 1024, MSG_WAITALL ) === FALSE){
+      if(socket_recv($client_socket , $buf , 10240, MSG_WAITALL) === FALSE){
           die("socket_recv() failed: reason: \n" . socket_strerror(socket_last_error()) . "\n");
       }
       // echo nl2br("\n" . $buf);
       $results = explode("\n", $buf);
       foreach($results as $doc){
-        echo "<a style='text-align: right;cursor:pointer;' href='index.php?reset=$doc' name='reset' class='system list-group-item'> $doc </a> <br>";
+        if($doc === "No Results Found"){
+          echo $doc;
+          break;
+        }
+        $doc_id = substr($doc, 0, $doc_id_len);
+        $contents = substr($doc, $doc_id_len, strlen($doc));
+        echo "<a style='text-align: right;cursor:pointer;' href='index.php?reset=$doc_id' name='reset' class='system list-group-item'> $doc_id </a> <br>";
+        echo $contents;
+        echo "<br>";
       }
 
       $db_host = '192.168.2.12';
@@ -82,10 +91,10 @@
       $db_passwd = 'bad_db_pwd';
       $pdo_dsn = "mysql:host=$db_host;dbname=$db_name";
       $pdo = new PDO($pdo_dsn, $db_user, $db_passwd);
-      $q = $pdo->query("SELECT * FROM history");
-      while($entry = $q->fetch()){
-          echo nl2br($entry['query'].": ".$entry['q_count']."\n");
-      }
+      // $q = $pdo->query("SELECT * FROM history");
+      // while($entry = $q->fetch()){
+      //     echo nl2br($entry['query'].": ".$entry['q_count']."\n");
+      // }
       
       $update = "INSERT INTO history VALUES ('$query', 1) ON DUPLICATE KEY UPDATE q_count = q_count + 1";
       $q = $pdo->query($update);

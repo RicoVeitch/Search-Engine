@@ -37,20 +37,30 @@ int main(int argc, char** argv) {
 
             if(request_type == "-d"){
                 uint64_t doc_id = static_cast<uint64_t>(std::stoull(raw_query));
-                std::string doc_contents = search.get_doc_content(doc_id);
+                std::string doc_contents = search.get_doc_content(doc_id, false);
                 server_socket.send_client(doc_contents);
             }else{
                 std::istringstream iss(raw_query);
-                std::string query;
+                std::string query = "";
                 std::string token;
                 while(iss >> token){
                     if(indexer.stop_words.find(token) == indexer.stop_words.end()){
                         query += token + " ";
                     }
                 }
-                query.pop_back();
-                std::string result = search.search(query);
-                server_socket.send_client(result);
+                std::vector<uint64_t> doc_ids = search.search(query);
+                if(doc_ids.empty()){
+                    std::string no_results = "No Results Found\n";
+                    server_socket.send_client(no_results);
+                }else{
+                    std::string result = "";
+                    for(uint64_t id : doc_ids){
+                        std::cout << id << std::endl;
+                        result += std::to_string(id);
+                        result += search.get_doc_content(id, true) + "\n"; //  + "\n"
+                    }
+                    server_socket.send_client(result);
+                }
             }
         }
 

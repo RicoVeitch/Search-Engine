@@ -22,7 +22,10 @@ namespace SE{
             const static uint8_t POST_ENTRY_SIZE;
             std::map<std::string, std::unordered_map<uint64_t, unsigned short> > dict; // word: doc_id: amount
             std::unordered_map<uint64_t, uint32_t> doc_lengths; // doc_id: doc_length
-            std::map<uint64_t, std::pair<uint64_t, uint64_t>> doc_range;
+            struct Doc_Range{
+                uint64_t doc_start, doc_end, title_start, title_end;
+            };
+            std::map<uint64_t, Doc_Range> doc_ranges;
         public:
             const static std::unordered_set<std::string> stop_words;  // taken from https://gist.github.com/sebleier/554280
             /**
