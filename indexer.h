@@ -47,6 +47,9 @@ namespace SE{
              * @param doc_lengths: maps documents to the length.
             */
             void save_info();
+            /**
+             * Saves the header and full range for each document in the collection. 
+            */
             void save_doc_range();
             /**
              * Cleans a string of any non alphanumeric characters

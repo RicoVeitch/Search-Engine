@@ -26,7 +26,23 @@ namespace SE{
              * @return: true if the word exist in the inverted index.
             */
             bool bsearch_indexing(std::string target_term, std::ifstream &indexing_in);
-            std::pair<uint64_t, uint64_t> bsearch_range(uint64_t target_doc, std::ifstream &range_in, bool header);
+            /**
+             * Performs the binary search on the file that holds the ranges for
+             * the header and full document range.
+             * @param target_doc: the target document to retrieve.
+             * @param range_in: the file stream.
+             * @param header: true if the header is to be retrieve or false
+             * if the full contents.
+             * @return a pair of pointers to the start and finish of header or full content.
+            */
+            std::pair<uint32_t, uint32_t> bsearch_range(uint64_t target_doc, std::ifstream &range_in, bool header);
+            /**
+             * Entry point to get the document summary or the full document content
+             * @param doc_id: the target document to retrieve
+             * @param header: true if the header is to be retrieve or false
+             * if the full contents.
+             * @return the header description or full contents.
+            */
             std::string get_doc_content(uint64_t doc_id, bool header);
             /**
              * Calculates and return the bm25 value.

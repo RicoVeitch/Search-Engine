@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
                     for(uint64_t id : doc_ids){
                         std::cout << id << std::endl;
                         result += std::to_string(id);
-                        result += search.get_doc_content(id, true) + "\n"; //  + "\n"
+                        result += search.get_doc_content(id, true) + "\n";
                     }
                     server_socket.send_client(result);
                 }

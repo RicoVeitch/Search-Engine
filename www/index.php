@@ -1,14 +1,19 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!-- <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN"> -->
+<!DOCTYPE html>
 <html>
 <head><title>Seach Engine test page</title>
-
+<link rel="stylesheet" type="text/css" href="mainstyle.css">
 </head>
 
 <body>
 <h1>Seach Engine test page</h1>
-
-</style>
+<!-- <style>
+body {
+    background-color: blue;
+  }
+</style> -->
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script>
@@ -19,22 +24,25 @@
   } );
 </script>
 
-<form autocomplete="off" action="" method="POST">
-<label for="query">Query: </label>
-  <input id="query", name="query">
-  <input type="submit" name="submitbutton" value="Submit"/>
-</form>
-<link rel="stylesheet" type="text/css" href="main.css">
+
+<div class="search_box">
+<form autocomplete="off" method="post" id="sendform">
+  <input id="query" class="search_text" name="query" type="text">
+  <!-- <input type="submit" name="submitbutton" value="Submit" class="search_button"/> -->
+  <a class="search_button" href="javascript:{}" onclick="document.getElementById('sendform').submit();" id="submitbutton" name="submitbutton">
+  <i class="fas fa-search"></i>
+  </a>
+  </form>
+</div>
+
+</body>
+</html>
 <?php
   $query= $_POST['query'];
-  $submitbutton= $_POST['submitbutton'];
+  $submitbutton = !empty($_POST);
   $port = '10002';
   $ip_address = '192.168.2.10';
   $doc_id_len = 10;
-
-  // if (isset($_GET['reset'])) {
-  //   header('Location: test.xml');
-  // }
 
   $clicked = isset($_GET['reset']);
   if (($submitbutton && !empty($query)) || $clicked){ // || $clicked
@@ -73,17 +81,22 @@
       }
       // echo nl2br("\n" . $buf);
       $results = explode("\n", $buf);
+      echo "<div class='results'>";
       foreach($results as $doc){
         if($doc === "No Results Found"){
           echo $doc;
           break;
         }
+        if(strlen($doc) == 0){
+          break;
+        }
         $doc_id = substr($doc, 0, $doc_id_len);
         $contents = substr($doc, $doc_id_len, strlen($doc));
-        echo "<a style='text-align: right;cursor:pointer;' href='index.php?reset=$doc_id' name='reset' class='system list-group-item'> $doc_id </a> <br>";
-        echo $contents;
-        echo "<br>";
+        echo "<a style='text-align: right;cursor:pointer;' href='index.php?reset=$doc_id' name='reset' class='system list-group-item'> WSJ$doc_id </a> ";
+        echo "<p>$contents</p>";
+        // echo "<br>";
       }
+      echo "</div>";
 
       $db_host = '192.168.2.12';
       $db_name = 'fvision';

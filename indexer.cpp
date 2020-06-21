@@ -58,7 +58,7 @@ namespace SE{
         std::ofstream range_out;
         range_out.open(range_name, std::ofstream::binary);
         for(auto loc : doc_ranges){
-            //std::cout << loc.first << " " << loc.second.doc_start << " " << loc.second.title_start << " " << loc.second.title_end << " " << loc.second.doc_end << "\n";
+            std::cout << loc.first << " " << loc.second.doc_start << " " << loc.second.title_start << " " << loc.second.title_end << " " << loc.second.doc_end << "\n";
             range_out.write((char*)&loc.first, sizeof(loc.first)); // docid
             range_out.write((char*)&loc.second.doc_start, sizeof(loc.second.doc_start));
             range_out.write((char*)&loc.second.doc_end, sizeof(loc.second.doc_end));

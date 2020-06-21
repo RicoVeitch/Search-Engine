@@ -1,9 +1,6 @@
 #include "search.h"
 #include "shared_const.h"
 
-#define AMT 0
-#define BLOCK 1
-
 namespace SE{
 
     bool Search::bsearch_indexing(std::string target_term, std::ifstream &indexing_in){
@@ -16,14 +13,12 @@ namespace SE{
         right = indexing_in.tellg();
 
         while(left <= right){
-            // bool found = true;
             std::string word;
             word.resize(MAX_WORD_LEN);
             mid = left + (right - left) / 2;
-            mid -= (mid % INDEX_ENTRY_SIZE); // round down to nearest 76th, 
+            mid -= (mid % INDEX_ENTRY_SIZE);
             indexing_in.seekg(mid);
             indexing_in.read(&word[0], 64);
-            //std::cout << word << "\n";
             if(word > target_term){
                 right = mid - INDEX_ENTRY_SIZE;
             } else if(word < target_term){
@@ -35,45 +30,51 @@ namespace SE{
         return false;
     }
 
-    std::pair<uint64_t, uint64_t> Search::bsearch_range(uint64_t target_doc, std::ifstream &range_in, bool header){
-        uint64_t left = 0, right = 0, mid = 0, doc_id;
-        std::pair<uint64_t, uint64_t> result;
+    std::pair<uint32_t, uint32_t> Search::bsearch_range(uint64_t target_doc, std::ifstream &range_in, bool header){
+        std::cout << target_doc << std::endl;
+        uint32_t left = 0, right = 0, mid = 0; 
+        uint64_t doc_id;
+        std::pair<uint32_t, uint32_t> result;
+        size_t line_length = (sizeof(uint32_t) * 4) + sizeof(target_doc);
         range_in.seekg(0, range_in.beg);
         left = range_in.tellg();
         range_in.seekg(0, range_in.end);
         right = range_in.tellg();
         while(left <= right){
             mid = left + (right - left) / 2;
-            mid -= (mid % (sizeof(uint64_t) * 5)); // round so mid is pointing to the start of an entry.
+            std::cout << "before: "<< mid << std::endl;
+            mid -= (mid % line_length); // round so mid is pointing to the start of an entry.
+            std::cout << "after: "<< mid << std::endl;
             range_in.seekg(mid);
-            range_in.read((char*)&doc_id, sizeof(uint64_t));
+            range_in.read((char*)&doc_id, sizeof(target_doc));
+            std::cout << doc_id << std::endl;
             if(doc_id > target_doc){
-                right = mid - (sizeof(uint64_t) * 5);
+                right = mid - line_length;
             } else if(doc_id < target_doc){
-                left = mid + (sizeof(uint64_t) * 5);
+                left = mid + line_length;
             } else{
                 break;
             }
         }
         if(header){
-            range_in.seekg(mid + (sizeof(uint64_t) * 3)); // skip to the header
+            range_in.seekg(mid + ((sizeof(uint32_t) * 2) + sizeof(target_doc))); // skip to the header
         }
-        range_in.read((char*)&result.first, sizeof(uint64_t));
-        range_in.read((char*)&result.second, sizeof(uint64_t));
+        range_in.read((char*)&result.first, sizeof(uint32_t));
+        range_in.read((char*)&result.second, sizeof(uint32_t));
         return result;
     }
 
     std::string Search::get_doc_content(uint64_t doc_id, bool header){
         std::ifstream range_in;
         std::ifstream wsj_in;
-        std::pair<uint64_t, uint64_t> loc;
-        uint64_t doc_len;
+        std::pair<uint32_t, uint32_t> loc;
+        uint32_t doc_len;
         std::string output;
         
         range_in.open(range_name, std::ifstream::binary);
         loc = bsearch_range(doc_id, range_in, header);
         doc_len = loc.second - loc.first;
-        std::cout << doc_len << "\n";
+        std::cout << doc_len << " " << loc.first << " " << loc.second << "\n";
         char* buffer = new char[doc_len + 1];
         wsj_in.open("wsj.xml", std::ifstream::binary);
         wsj_in.seekg(loc.first);
@@ -89,7 +90,6 @@ namespace SE{
                 }
             }
         }
-        // std::cout << output << "\n";
         return output;
     }
 
