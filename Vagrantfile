@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
         backend.vm.provision "shell", inline: <<-SHELL
             apt-get update
             apt-get install -y g++
-            cd /vagrant
+            cd /vagrant/src/
             g++ -std=c++11 search.cpp main.cpp indexer.cpp server_socket.cpp -o search_engine
             ./search_engine -s &
         SHELL
@@ -28,7 +28,7 @@ Vagrant.configure("2") do |config|
             a2dissite 000-default
             # reload the webserver configuration
             service apache2 reload
-            # see at http://127.0.0.1:8080/ 
+            # see at http://127.0.0.1:8080/
         SHELL
     end
 

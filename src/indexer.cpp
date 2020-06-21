@@ -58,7 +58,6 @@ namespace SE{
         std::ofstream range_out;
         range_out.open(range_name, std::ofstream::binary);
         for(auto loc : doc_ranges){
-            std::cout << loc.first << " " << loc.second.doc_start << " " << loc.second.title_start << " " << loc.second.title_end << " " << loc.second.doc_end << "\n";
             range_out.write((char*)&loc.first, sizeof(loc.first)); // docid
             range_out.write((char*)&loc.second.doc_start, sizeof(loc.second.doc_start));
             range_out.write((char*)&loc.second.doc_end, sizeof(loc.second.doc_end));
@@ -91,7 +90,7 @@ namespace SE{
         return token_buffer;
     }
 
-    void Indexer::parse(std::string wsj_path){
+    void Indexer::parse(){
         std::string curr_doc;
         std::string token;
         char *raw_token; 
@@ -106,8 +105,6 @@ namespace SE{
         while (fgets(buffer, sizeof(buffer), fp) != NULL){
             curr = buffer;
             while((raw_token = clean_token()) != NULL){
-                // std::cout << curr-buffer << std::endl;
-                //std::cout << header_len << std::endl;
                 if(strcmp(raw_token, "<DOC>") == 0){
                     d_range.doc_start = ftell(fp) - doc_tag_len - 1; // - newline
                 }else if(strcmp(raw_token, "</DOC>") == 0){
@@ -146,9 +143,9 @@ namespace SE{
 
     }
 
-    void Indexer::index(std::string wsj_path){
+    void Indexer::index(){
         std::cout << "PARSING" << std::endl;
-        parse(wsj_path);
+        parse();
         std::cout << "SAVING DICT" << std::endl;
         save_dict();
         std::cout << "SAVING INFO" << std::endl;

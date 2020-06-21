@@ -3,10 +3,11 @@
 .vagrant
 *.log
 *.dSYM
-*.xml
 *.pdf
 *.txt
+wsj.xml
 indexing
 info
 posting_list
-search
+search_engine
+doc_locs

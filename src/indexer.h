@@ -23,7 +23,7 @@ namespace SE{
             std::map<std::string, std::unordered_map<uint64_t, unsigned short> > dict; // word: doc_id: amount
             std::unordered_map<uint64_t, uint32_t> doc_lengths; // doc_id: doc_length
             struct Doc_Range{
-                uint64_t doc_start, doc_end, title_start, title_end;
+                uint32_t doc_start, doc_end, title_start, title_end;
             };
             std::map<uint64_t, Doc_Range> doc_ranges;
         public:
@@ -61,10 +61,10 @@ namespace SE{
              * @param dict: the dictionary mapping words to the documents that they appear in along with the counts.
              * @param doc_lengths: maps documents to the length.
             */
-            void parse(std::string wsj_path);
+            void parse();
             /**
              * Entry point.
             */
-            void index(std::string wsj_path);
+            void index();
     };
 }

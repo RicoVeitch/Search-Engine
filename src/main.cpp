@@ -19,11 +19,11 @@ int main(int argc, char** argv) {
     }
     std::string option = argv[1];
     if(option == "-i"){
-        if(argc != 3){
+        if(argc != 2){
             help();
             return EXIT_FAILURE;
         }
-        indexer.index(std::string(argv[2]));
+        indexer.index();
     }else if(option == "-s"){ 
         SE::Server_Socket server_socket;
         server_socket.set_up();
@@ -55,7 +55,6 @@ int main(int argc, char** argv) {
                 }else{
                     std::string result = "";
                     for(uint64_t id : doc_ids){
-                        std::cout << id << std::endl;
                         result += std::to_string(id);
                         result += search.get_doc_content(id, true) + "\n";
                     }

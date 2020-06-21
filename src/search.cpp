@@ -31,7 +31,6 @@ namespace SE{
     }
 
     std::pair<uint32_t, uint32_t> Search::bsearch_range(uint64_t target_doc, std::ifstream &range_in, bool header){
-        std::cout << target_doc << std::endl;
         uint32_t left = 0, right = 0, mid = 0; 
         uint64_t doc_id;
         std::pair<uint32_t, uint32_t> result;
@@ -42,12 +41,9 @@ namespace SE{
         right = range_in.tellg();
         while(left <= right){
             mid = left + (right - left) / 2;
-            std::cout << "before: "<< mid << std::endl;
             mid -= (mid % line_length); // round so mid is pointing to the start of an entry.
-            std::cout << "after: "<< mid << std::endl;
             range_in.seekg(mid);
             range_in.read((char*)&doc_id, sizeof(target_doc));
-            std::cout << doc_id << std::endl;
             if(doc_id > target_doc){
                 right = mid - line_length;
             } else if(doc_id < target_doc){
@@ -74,9 +70,8 @@ namespace SE{
         range_in.open(range_name, std::ifstream::binary);
         loc = bsearch_range(doc_id, range_in, header);
         doc_len = loc.second - loc.first;
-        std::cout << doc_len << " " << loc.first << " " << loc.second << "\n";
         char* buffer = new char[doc_len + 1];
-        wsj_in.open("wsj.xml", std::ifstream::binary);
+        wsj_in.open(wsj_path, std::ifstream::binary);
         wsj_in.seekg(loc.first);
         wsj_in.read(buffer, doc_len);
         buffer[doc_len] = '\0';

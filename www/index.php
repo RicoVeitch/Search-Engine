@@ -66,10 +66,12 @@ body {
       if(socket_recv($client_socket , $buf , 10240, MSG_WAITALL ) === FALSE){
         die("socket_recv() failed: reason: \n" . socket_strerror(socket_last_error()) . "\n");
       }
-      $fp = fopen('test.xml', 'w');
+      $css = "<?xml-stylesheet type='text/css' href='doc.css'?>";
+      $fp = fopen('doc.xml', 'w');
+      fwrite($fp, $css);
       fwrite($fp, $buf);
       fclose($fp);
-      header('Location: test.xml');
+      header('Location: doc.xml');
 
     }else{
       if(socket_send($client_socket , "-f".$query , strlen($query) + 2 , 0) === false){
