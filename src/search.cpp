@@ -132,8 +132,7 @@ namespace SE{
         if(query.empty()){
             return {};
         }
-        std::string query_copy = query;
-
+        
         // indexing information
         std::ifstream indexing_in;
         uint32_t term_doc_amt;
@@ -155,16 +154,18 @@ namespace SE{
         std::unordered_map<uint64_t, double> query_results; 
         std::unordered_map<std::string, int> query_term_count;
 
-        std::istringstream qss(query_copy);
-        while (getline(qss, query_copy, ' ')){
-            query_term_count[query_copy]++;
+        std::string token;
+        std::istringstream query_tokens(query);
+        while(query_tokens >> token){
+            query_term_count[token]++;
         }
         
-        std::istringstream iss(query);
+        query_tokens.clear();
+        query_tokens.str(query);
         indexing_in.open(indexing_name, std::ofstream::binary);
 
-        while (std::getline(iss, query, ' ')){
-            if(bsearch_indexing(query, indexing_in)){
+        while(query_tokens >> token){
+            if(bsearch_indexing(token, indexing_in)){
                 indexing_in.read((char*)&term_doc_amt, sizeof(term_doc_amt));
                 indexing_in.read((char*)&block_loc, sizeof(block_loc));
                 fseek(posting_in, block_loc, SEEK_SET);
@@ -173,7 +174,7 @@ namespace SE{
                     fread(&doc_id, sizeof(doc_id), 1, posting_in);
                     fread(&term_count, sizeof(term_count), 1, posting_in);
                     fread(&doc_len, sizeof(doc_len), 1, posting_in);
-                    query_results[doc_id] += bm25(doc_len, avg_doc_len, doc_amt, term_doc_amt, term_count, query_term_count[query]);
+                    query_results[doc_id] += bm25(doc_len, avg_doc_len, doc_amt, term_doc_amt, term_count, query_term_count[token]);
                     docs_read++;
                 }while(docs_read < term_doc_amt);
             }
