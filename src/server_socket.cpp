@@ -9,34 +9,34 @@ namespace SE{
         int opt = 1; 
         // Create socket
         if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
-            std::cout << "cant make socket\n";
-            return -1; 
+            std::cerr << "cant make socket\n";
+            return 0; 
         } 
         
         // Attach socket to the port 10002 
         if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
-            std::cout << "cant make socket\n";
-            return -1; 
+            std::cerr << "cant make socket\n";
+            return 0; 
         } 
         address.sin_family = AF_INET; 
         address.sin_port = htons(PORT); 
         
         // provide address for the server socket to the private address of the backend vm.
         if(inet_pton(AF_INET, ip_address, &address.sin_addr) <= 0 ) { 
-            std::cout << "Invalid address\n"; 
-            return -1; 
+            std::cerr << "Invalid address\n"; 
+            return 0; 
         } 
 
         // bind the server socket to the address provided previously
         if (bind(server_socket, (struct sockaddr *)&address, sizeof(address))<0) { 
-            std::cout << "bind fail\n";
-            return -1; 
+            std::cerr << "bind failed\n";
+            return 0; 
         } 
 
         // start listing.
         if (listen(server_socket, 3) < 0) { 
-            std::cout << "listen fail\n";
-            return -1; 
+            std::cerr << "listen failed\n";
+            return 0; 
         }
         return 1;
     }

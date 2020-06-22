@@ -9,11 +9,16 @@
 
     $searchTerm = $_GET['term'];
     // mysql_real_escape_string, '%s%%'
-    $sql =  sprintf("SELECT * FROM history WHERE query LIKE '%s%%' ORDER BY q_count DESC", $searchTerm);
-    
-    $query = $pdo->query($sql);
+    $order =  sprintf("SELECT * FROM history WHERE query LIKE '%s%%' ORDER BY q_count DESC", $searchTerm);
+    $order = $pdo->prepare($order);
 
-    while ($row = $query->fetch()) {
+    // $query = $pdo->query($sql);
+    $order->execute();
+
+    // while ($row = $query->fetch()) {
+    //     $data[] = $row['query'];
+    // }
+    foreach ($order as $row) {
         $data[] = $row['query'];
     }
 

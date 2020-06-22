@@ -86,7 +86,7 @@ body {
       echo "<div class='results'>";
       foreach($results as $doc){
         if($doc === "No Results Found"){
-          echo $doc;
+          echo "<p> $doc </p>";
           break;
         }
         if(strlen($doc) == 0){
@@ -106,13 +106,10 @@ body {
       $db_passwd = 'bad_db_pwd';
       $pdo_dsn = "mysql:host=$db_host;dbname=$db_name";
       $pdo = new PDO($pdo_dsn, $db_user, $db_passwd);
-      // $q = $pdo->query("SELECT * FROM history");
-      // while($entry = $q->fetch()){
-      //     echo nl2br($entry['query'].": ".$entry['q_count']."\n");
-      // }
-      
-      $update = "INSERT INTO history VALUES ('$query', 1) ON DUPLICATE KEY UPDATE q_count = q_count + 1";
-      $q = $pdo->query($update);
+
+      $update = $pdo->prepare("INSERT INTO history VALUES ('$query', 1) ON DUPLICATE KEY UPDATE q_count = q_count + 1");
+      // $q = $pdo->query($update);
+      $update->execute();
     }
    }
 ?>

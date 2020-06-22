@@ -26,7 +26,8 @@ int main(int argc, char** argv) {
         indexer.index();
     }else if(option == "-s"){ 
         SE::Server_Socket server_socket;
-        server_socket.set_up();
+        if(!server_socket.set_up())
+            return EXIT_FAILURE;
         char *request;
         std::string raw_query;
         std::string request_type;
