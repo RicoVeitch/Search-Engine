@@ -12,7 +12,7 @@ Follow the steps below to run the program.
 
 ### Setting up
 - After installing open terminal and navigate to the root directory.
-- Download the wsj file at https://drive.google.com/file/d/1nNZNxFM6e41FQ4fQoXubTi0bUcnFH5Bn/view and place it into the 'www' directory
+- Due to the fact that the TREC WSJ collection is copywrited, the wsj.xml file provided just acts as test material to index on. 
 - Run './setup.sh' which will index the collection and set up the virtual machines
 - You can view the webpage by navigating to http://127.0.0.1:8080/
 - Once you are done you can close the program by 'vagrant destroy'
