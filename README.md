@@ -1,7 +1,7 @@
-# BM25 search engine. 
+# BM25 search engine.
 Indexed on the TREC WSJ collection. Uses three virtual machines that interact with
 each other over a private network. These machines include a webpage, a database, and the 
-c++ search engine. 
+c++ search engine.
 
 ## Getting started
 Follow the steps below to run the program.
@@ -17,3 +17,8 @@ Follow the steps below to run the program.
 - You can view the webpage by navigating to http://127.0.0.1:8080/
 - Once you are done you can close the program by 'vagrant destroy'
 - If you wish to run the program again and have already indexed the collection (by running setup.sh), use 'vagrant up' to restart the vm's.
+
+## Screenshots
+![Alt text](screenshots/home.jpg?raw=true "Home Webpage.")
+![Alt text](screenshots/results.jpg?raw=true "Results after searching for term.")
+![Alt text](screenshots/docpage.jpg?raw=true "Results after selecting a target document.")
